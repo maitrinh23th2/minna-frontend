@@ -71,15 +71,30 @@ function App() {
     .catch(err => console.error("Lỗi xóa từ:", err));
   }
 
+  // Hàm phát âm tiếng Nhật tự động
+  const speakWord = (text, e) => {
+    e.stopPropagation(); // Ngăn không cho lật thẻ khi bấm nút loa
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ja-JP';
+      utterance.rate = 0.9; // Đọc chậm một chút cho dễ nghe
+      window.speechSynthesis.speak(utterance);
+    } else {
+      alert("Trình duyệt của bạn không hỗ trợ phát âm!");
+    }
+  };
+
   if (!role) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#f0f4f8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
-        <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', textAlign: 'center', width: '100%', maxWidth: '400px' }}>
-          <h2 style={{ color: '#2c3e50', marginBottom: '20px' }}>Hệ Thống Từ Vựng</h2>
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <input placeholder="Tên đăng nhập" value={username} onChange={e => setUsername(e.target.value)} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '1rem' }} />
-            <input type="password" placeholder="Mật khẩu" value={password} onChange={e => setPassword(e.target.value)} required style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '1rem' }} />
-            <button type="submit" style={{ padding: '12px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', marginTop: '10px' }}>Vào Học</button>
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', padding: '20px' }}>
+        <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(10px)', padding: '45px 35px', borderRadius: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', textAlign: 'center', width: '100%', maxWidth: '420px' }}>
+          <div style={{ width: '60px', height: '60px', background: '#3b82f6', color: 'white', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', fontWeight: 'bold', margin: '0 auto 20px auto', boxShadow: '0 10px 20px rgba(59,130,246,0.3)' }}>文</div>
+          <h2 style={{ color: '#1e293b', marginBottom: '8px', fontSize: '1.7rem' }}>Minna Flashcard</h2>
+          <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '25px' }}>Chinh phục từ vựng tiếng Nhật mỗi ngày</p>
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <input placeholder="Tên đăng nhập" value={username} onChange={e => setUsername(e.target.value)} required style={{ padding: '14px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '1rem', outline: 'none', background: '#f8fafc', transition: 'all 0.2s' }} />
+            <input type="password" placeholder="Mật khẩu" value={password} onChange={e => setPassword(e.target.value)} required style={{ padding: '14px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '1rem', outline: 'none', background: '#f8fafc', transition: 'all 0.2s' }} />
+            <button type="submit" style={{ padding: '14px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', marginTop: '10px', boxShadow: '0 8px 20px rgba(59,130,246,0.35)', transition: 'transform 0.1s' }}>Đăng Nhập Ngay</button>
           </form>
         </div>
       </div>
@@ -87,44 +102,66 @@ function App() {
   }
 
   const lessonsAvailable = Object.keys(vocabData);
-  const currentWord = vocabData[currentDeck] ? vocabData[currentDeck][currentIndex] : null;
+  const currentDeckList = vocabData[currentDeck] || [];
+  const currentWord = currentDeckList[currentIndex] || null;
+  const progressPercent = currentDeckList.length > 0 ? ((currentIndex + 1) / currentDeckList.length) * 100 : 0;
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f0f4f8', padding: '40px 20px', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: '#ffffff', padding: '30px 40px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f1f5f9', padding: '30px 20px', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+      <div style={{ maxWidth: '850px', margin: '0 auto', backgroundColor: '#ffffff', padding: '35px 45px', borderRadius: '24px', boxShadow: '0 15px 35px rgba(0,0,0,0.06)' }}>
         
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f0f4f8', paddingBottom: '20px', marginBottom: '30px' }}>
-          <h2 style={{ margin: 0, color: '#2c3e50', fontSize: '1.8rem' }}>Minna no Nihongo Flashcard</h2>
+        {/* Header ứng dụng */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '20px', marginBottom: '30px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '42px', height: '42px', background: '#3b82f6', color: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '20px' }}>和</div>
+            <h2 style={{ margin: 0, color: '#1e293b', fontSize: '1.6rem', fontWeight: '800' }}>Minna Flashcard</h2>
+          </div>
           <button 
             onClick={() => setRole(null)} 
-            style={{ backgroundColor: '#ffe3e3', color: '#dc3545', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+            style={{ backgroundColor: '#fee2e2', color: '#ef4444', border: 'none', padding: '10px 18px', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem', transition: 'background 0.2s' }}>
             Đăng xuất
           </button>
         </div>
 
+        {/* Khung Admin thêm từ vựng */}
         {role === 'admin' && (
-          <div style={{ background: '#f8f9fa', padding: '25px', borderRadius: '12px', marginBottom: '35px', border: '1px dashed #ced4da' }}>
-            <h3 style={{ marginTop: 0, color: '#495057', textAlign: 'center', marginBottom: '20px' }}>🔧 Bảng Thêm Từ Vựng</h3>
-            <form onSubmit={handleAddWord} style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
-              <input placeholder="Bài học (VD: Bài 26)" value={newWord.level} onChange={e => setNewWord({...newWord, level: e.target.value})} required style={{width: '130px', padding: '10px', border: '1px solid #ccc', borderRadius: '6px'}}/>
-              <input placeholder="Hiragana (VD: みます)" value={newWord.hiragana} onChange={e => setNewWord({...newWord, hiragana: e.target.value})} required style={{padding: '10px', border: '1px solid #ccc', borderRadius: '6px'}} />
-              <input placeholder="Kanji (VD: 見ます)" value={newWord.kanji} onChange={e => setNewWord({...newWord, kanji: e.target.value})} style={{padding: '10px', border: '1px solid #ccc', borderRadius: '6px'}} />
-              <input placeholder="Nghĩa (VD: Xem)" value={newWord.meaning} onChange={e => setNewWord({...newWord, meaning: e.target.value})} required style={{padding: '10px', border: '1px solid #ccc', borderRadius: '6px'}} />
-              <button type="submit" style={{ padding: '10px 25px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Lưu Từ</button>
+          <div style={{ background: '#f8fafc', padding: '25px', borderRadius: '16px', marginBottom: '30px', border: '2px dashed #cbd5e1' }}>
+            <h3 style={{ marginTop: 0, color: '#334155', textAlign: 'center', marginBottom: '18px', fontSize: '1.2rem' }}>🔧 Bảng Thêm Từ Vựng Mới</h3>
+            <form onSubmit={handleAddWord} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <input placeholder="Bài học (VD: Bài 26)" value={newWord.level} onChange={e => setNewWord({...newWord, level: e.target.value})} required style={{width: '130px', padding: '11px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.95rem'}}/>
+              <input placeholder="Hiragana (VD: みます)" value={newWord.hiragana} onChange={e => setNewWord({...newWord, hiragana: e.target.value})} required style={{padding: '11px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.95rem'}} />
+              <input placeholder="Kanji (VD: 見ます)" value={newWord.kanji} onChange={e => setNewWord({...newWord, kanji: e.target.value})} style={{padding: '11px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.95rem'}} />
+              <input placeholder="Nghĩa (VD: Xem)" value={newWord.meaning} onChange={e => setNewWord({...newWord, meaning: e.target.value})} required style={{padding: '11px', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.95rem'}} />
+              <button type="submit" style={{ padding: '11px 24px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(16,185,129,0.25)' }}>Lưu Vào DB</button>
             </form>
           </div>
         )}
 
-        <div className="menu-container" style={{ marginBottom: '35px', textAlign: 'center' }}>
-          <label style={{ marginRight: '15px', fontWeight: 'bold', fontSize: '1.2rem', color: '#555' }}>Chọn Bài Học: </label>
-          <select value={currentDeck} onChange={e => {setCurrentDeck(e.target.value); setCurrentIndex(0); setIsFlipped(false);}} style={{ padding: '10px 20px', borderRadius: '8px', fontSize: '1.1rem', border: '2px solid #e2e8f0', cursor: 'pointer', outline: 'none', backgroundColor: '#f8fafc' }}>
+        {/* Thanh chọn bài học */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '30px', gap: '15px' }}>
+          <label style={{ fontWeight: '700', fontSize: '1.1rem', color: '#475569' }}>📚 Chọn Bài Học:</label>
+          <select value={currentDeck} onChange={e => {setCurrentDeck(e.target.value); setCurrentIndex(0); setIsFlipped(false);}} style={{ padding: '10px 20px', borderRadius: '10px', fontSize: '1.05rem', border: '2px solid #cbd5e1', cursor: 'pointer', outline: 'none', backgroundColor: '#ffffff', fontWeight: '600', color: '#1e293b' }}>
             {lessonsAvailable.map(lesson => (
                <option key={lesson} value={lesson}>{lesson}</option>
             ))}
           </select>
         </div>
 
-        {lessonsAvailable.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>Đang tải dữ liệu...</p> : 
+        {/* Thanh tiến trình học */}
+        {currentDeckList.length > 0 && (
+          <div style={{ maxWidth: '480px', margin: '0 auto 20px auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: '600', color: '#64748b', marginBottom: '6px' }}>
+              <span>Tiến độ bài học</span>
+              <span>{currentIndex + 1} / {currentDeckList.length} từ</span>
+            </div>
+            <div style={{ width: '100%', backgroundColor: '#e2e8f0', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ width: `${progressPercent}%`, backgroundColor: '#3b82f6', height: '100%', transition: 'width 0.3s ease', borderRadius: '4px' }}></div>
+            </div>
+          </div>
+        )}
+
+        {/* Khu vực Thẻ Flashcard 3D */}
+        {lessonsAvailable.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>Đang tải dữ liệu từ vựng...</p> : 
           currentWord ? (
           <div 
             onClick={() => setIsFlipped(!isFlipped)} 
@@ -132,8 +169,8 @@ function App() {
               margin: '0 auto', 
               cursor: 'pointer', 
               width: '100%', 
-              maxWidth: '450px', 
-              height: '260px', 
+              maxWidth: '480px', 
+              height: '280px', 
               perspective: '1000px' 
             }}
           >
@@ -142,42 +179,13 @@ function App() {
               height: '100%', 
               position: 'relative', 
               transformStyle: 'preserve-3d', 
-              transition: 'transform 0.4s ease', 
-              transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' 
+              transition: 'transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1)', 
+              transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+              borderRadius: '24px',
+              boxShadow: '0 20px 30px rgba(0,0,0,0.08)'
             }}>
               
-              {/* Mặt trước */}
-              <div style={{ 
-                position: 'absolute', 
-                width: '100%', 
-                height: '100%', 
-                backfaceVisibility: 'hidden', 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                backgroundColor: '#ffffff', 
-                borderRadius: '20px', 
-                border: '2px solid #007bff', 
-                boxShadow: '0 8px 16px rgba(0,123,255,0.15)',
-                padding: '20px',
-                boxSizing: 'border-box'
-              }}>
-                <h1 style={{ 
-                  fontSize: '3rem', 
-                  margin: 0, 
-                  color: '#0056b3', 
-                  fontFamily: '"Meiryo", "Hiragino Sans", "MS PGothic", sans-serif',
-                  letterSpacing: '4px',
-                  lineHeight: '1.4',
-                  textAlign: 'center',
-                  wordBreak: 'keep-all',
-                  overflowWrap: 'break-word'
-                }}>
-                  {currentWord.hiragana}
-                </h1>
-              </div>
-
-              {/* Mặt sau */}
+              {/* Mặt trước (Hiragana & Nút Loa) */}
               <div style={{ 
                 position: 'absolute', 
                 width: '100%', 
@@ -187,18 +195,27 @@ function App() {
                 flexDirection: 'column', 
                 justifyContent: 'center', 
                 alignItems: 'center', 
-                backgroundColor: '#fdfdfd', 
-                borderRadius: '20px', 
-                border: '2px solid #28a745', 
-                boxShadow: '0 8px 16px rgba(40,167,69,0.15)',
-                transform: 'rotateY(180deg)',
+                backgroundColor: '#ffffff', 
+                borderRadius: '24px', 
+                border: '2px solid #e2e8f0', 
                 padding: '20px',
                 boxSizing: 'border-box'
               }}>
-                <h2 style={{ 
-                  fontSize: '2.6rem', 
-                  margin: '0 0 10px 0', 
-                  color: '#333333',
+                <span style={{ position: 'absolute', top: '16px', left: '20px', fontSize: '0.75rem', fontWeight: 'bold', color: '#3b82f6', background: '#eff6ff', padding: '4px 10px', borderRadius: '6px' }}>Mặt Trước (Hiragana)</span>
+                
+                {/* Nút phát âm */}
+                <button 
+                  onClick={(e) => speakWord(currentWord.hiragana, e)}
+                  style={{ position: 'absolute', top: '14px', right: '16px', background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '38px', height: '38px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', transition: 'background 0.2s' }}
+                  title="Nghe phát âm"
+                >
+                  🔊
+                </button>
+
+                <h1 style={{ 
+                  fontSize: '3.2rem', 
+                  margin: '15px 0 0 0', 
+                  color: '#1e293b', 
                   fontFamily: '"Meiryo", "Hiragino Sans", "MS PGothic", sans-serif',
                   letterSpacing: '4px',
                   lineHeight: '1.4',
@@ -206,32 +223,79 @@ function App() {
                   wordBreak: 'keep-all',
                   overflowWrap: 'break-word'
                 }}>
+                  {currentWord.hiragana}
+                </h1>
+                <span style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '15px' }}>Bấm vào thẻ để lật mặt sau ⟳</span>
+              </div>
+
+              {/* Mặt sau (Kanji & Ý nghĩa) */}
+              <div style={{ 
+                position: 'absolute', 
+                width: '100%', 
+                height: '100%', 
+                backfaceVisibility: 'hidden', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                backgroundColor: '#fafaf9', 
+                borderRadius: '24px', 
+                border: '2px solid #cbd5e1', 
+                transform: 'rotateY(180deg)',
+                padding: '20px',
+                boxSizing: 'border-box'
+              }}>
+                <span style={{ position: 'absolute', top: '16px', left: '20px', fontSize: '0.75rem', fontWeight: 'bold', color: '#10b981', background: '#ecfdf5', padding: '4px 10px', borderRadius: '6px' }}>Mặt Sau (Kanji & Nghĩa)</span>
+                
+                <h2 style={{ 
+                  fontSize: '2.8rem', 
+                  margin: '10px 0 8px 0', 
+                  color: '#0f172a',
+                  fontFamily: '"Meiryo", "Hiragino Sans", "MS PGothic", sans-serif',
+                  letterSpacing: '4px',
+                  textAlign: 'center',
+                  wordBreak: 'keep-all'
+                }}>
                   {currentWord.kanji || currentWord.hiragana}
                 </h2>
-                <h3 style={{ fontSize: '1.5rem', margin: 0, color: '#c92a2a', fontWeight: 'bold', textAlign: 'center' }}>
+                <h3 style={{ fontSize: '1.5rem', margin: '0 0 10px 0', color: '#e11d48', fontWeight: '700', textAlign: 'center' }}>
                   {currentWord.meaning}
                 </h3>
+                <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Bấm vào thẻ để lật về mặt trước ⟳</span>
               </div>
 
             </div>
           </div>
         ) : (
-          <p style={{ textAlign: 'center', color: '#888' }}>Bài học này hiện chưa có từ vựng.</p>
+          <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
+            <p style={{ fontSize: '1.1rem' }}>🎉 Bài học này hiện chưa có từ vựng nào.</p>
+          </div>
         )}
         
+        {/* Thanh điều hướng nút bấm */}
         {currentWord && (
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '40px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '35px', flexWrap: 'wrap' }}>
+            {/* Nút quay lại */}
             <button 
-              onClick={() => {setIsFlipped(false); setCurrentIndex((prev) => (prev + 1) % vocabData[currentDeck].length)}} 
-              style={{ fontSize: '1.2rem', padding: '14px 40px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(40,167,69,0.3)', transition: 'all 0.2s' }}
+              onClick={() => {setIsFlipped(false); setCurrentIndex((prev) => (prev === 0 ? currentDeckList.length - 1 : prev - 1))}} 
+              style={{ fontSize: '1rem', padding: '13px 24px', backgroundColor: '#64748b', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '700', boxShadow: '0 4px 12px rgba(100,116,139,0.25)', transition: 'all 0.2s' }}
+            >
+              ⬅ Từ trước
+            </button>
+
+            {/* Nút tiếp theo */}
+            <button 
+              onClick={() => {setIsFlipped(false); setCurrentIndex((prev) => (prev + 1) % currentDeckList.length)}} 
+              style={{ fontSize: '1rem', padding: '13px 28px', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '700', boxShadow: '0 4px 12px rgba(59,130,246,0.3)', transition: 'all 0.2s' }}
             >
               Từ tiếp theo ➔
             </button>
 
+            {/* Nút Xóa dành riêng cho Admin */}
             {role === 'admin' && (
               <button 
                 onClick={() => handleDeleteWord(currentWord.id)}
-                style={{ fontSize: '1.1rem', padding: '14px 25px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(220,53,69,0.3)', transition: 'all 0.2s' }}
+                style={{ fontSize: '1rem', padding: '13px 20px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '700', boxShadow: '0 4px 12px rgba(239,68,68,0.25)', transition: 'all 0.2s' }}
               >
                 🗑 Xóa từ này
               </button>
