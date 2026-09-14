@@ -163,13 +163,15 @@ function App() {
                 boxSizing: 'border-box'
               }}>
                 <h1 style={{ 
-                  fontSize: '3.8rem', 
+                  fontSize: '3rem', 
                   margin: 0, 
                   color: '#0056b3', 
                   fontFamily: '"Meiryo", "Hiragino Sans", "MS PGothic", sans-serif',
-                  letterSpacing: '2px',
+                  letterSpacing: '4px',
+                  lineHeight: '1.4',
                   textAlign: 'center',
-                  wordBreak: 'break-word'
+                  wordBreak: 'keep-all',
+                  overflowWrap: 'break-word'
                 }}>
                   {currentWord.hiragana}
                 </h1>
@@ -194,17 +196,19 @@ function App() {
                 boxSizing: 'border-box'
               }}>
                 <h2 style={{ 
-                  fontSize: '3.2rem', 
+                  fontSize: '2.6rem', 
                   margin: '0 0 10px 0', 
                   color: '#333333',
                   fontFamily: '"Meiryo", "Hiragino Sans", "MS PGothic", sans-serif',
-                  letterSpacing: '2px',
+                  letterSpacing: '4px',
+                  lineHeight: '1.4',
                   textAlign: 'center',
-                  wordBreak: 'break-word'
+                  wordBreak: 'keep-all',
+                  overflowWrap: 'break-word'
                 }}>
                   {currentWord.kanji || currentWord.hiragana}
                 </h2>
-                <h3 style={{ fontSize: '1.6rem', margin: 0, color: '#c92a2a', fontWeight: 'bold', textAlign: 'center' }}>
+                <h3 style={{ fontSize: '1.5rem', margin: 0, color: '#c92a2a', fontWeight: 'bold', textAlign: 'center' }}>
                   {currentWord.meaning}
                 </h3>
               </div>
