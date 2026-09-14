@@ -56,9 +56,7 @@ function App() {
     })
   }
 
-  // HÀM XỬ LÝ XÓA TỪ VỰNG
   const handleDeleteWord = (id) => {
-    // Hiện hộp thoại hỏi lại cho chắc chắn
     if (!window.confirm("Bạn có chắc chắn muốn xóa từ vựng này khỏi Database không?")) return;
 
     fetch(`https://minna-backend.onrender.com/api/vocab/${id}`, {
@@ -67,15 +65,15 @@ function App() {
     .then(res => res.json())
     .then(() => {
       setIsFlipped(false);
-      setCurrentIndex(0); // Trả về thẻ đầu tiên để tránh lỗi hiển thị
-      fetchVocab(); // Tải lại dữ liệu mới nhất
+      setCurrentIndex(0);
+      fetchVocab();
     })
     .catch(err => console.error("Lỗi xóa từ:", err));
   }
 
   if (!role) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: '#f0f4f8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>
+      <div style={{ minHeight: '100vh', backgroundColor: '#f0f4f8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
         <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', textAlign: 'center', width: '100%', maxWidth: '400px' }}>
           <h2 style={{ color: '#2c3e50', marginBottom: '20px' }}>Hệ Thống Từ Vựng</h2>
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -92,7 +90,7 @@ function App() {
   const currentWord = vocabData[currentDeck] ? vocabData[currentDeck][currentIndex] : null;
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f0f4f8', padding: '40px 20px', fontFamily: 'sans-serif' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f0f4f8', padding: '40px 20px', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: '#ffffff', padding: '30px 40px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #f0f4f8', paddingBottom: '20px', marginBottom: '30px' }}>
@@ -128,37 +126,108 @@ function App() {
 
         {lessonsAvailable.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>Đang tải dữ liệu...</p> : 
           currentWord ? (
-          <div className={`card ${isFlipped ? 'flipped' : ''}`} onClick={() => setIsFlipped(!isFlipped)} style={{ margin: '0 auto', cursor: 'pointer', width: '400px', height: '250px' }}>
-            <div className="card-inner" style={{ width: '100%', height: '100%', position: 'relative' }}>
-              <div className="card-front" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', backgroundColor: '#ffffff', borderRadius: '20px', border: '2px solid #007bff', boxShadow: '0 8px 16px rgba(0,123,255,0.15)' }}>
-                <h1 style={{ fontSize: '4.5rem', margin: 0, color: '#0056b3' }}>{currentWord.hiragana}</h1>
+          <div 
+            onClick={() => setIsFlipped(!isFlipped)} 
+            style={{ 
+              margin: '0 auto', 
+              cursor: 'pointer', 
+              width: '100%', 
+              maxWidth: '450px', 
+              height: '260px', 
+              perspective: '1000px' 
+            }}
+          >
+            <div style={{ 
+              width: '100%', 
+              height: '100%', 
+              position: 'relative', 
+              transformStyle: 'preserve-3d', 
+              transition: 'transform 0.4s ease', 
+              transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' 
+            }}>
+              
+              {/* Mặt trước */}
+              <div style={{ 
+                position: 'absolute', 
+                width: '100%', 
+                height: '100%', 
+                backfaceVisibility: 'hidden', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                backgroundColor: '#ffffff', 
+                borderRadius: '20px', 
+                border: '2px solid #007bff', 
+                boxShadow: '0 8px 16px rgba(0,123,255,0.15)',
+                padding: '20px',
+                boxSizing: 'border-box'
+              }}>
+                <h1 style={{ 
+                  fontSize: '3.8rem', 
+                  margin: 0, 
+                  color: '#0056b3', 
+                  fontFamily: '"Meiryo", "Hiragino Sans", "MS PGothic", sans-serif',
+                  letterSpacing: '2px',
+                  textAlign: 'center',
+                  wordBreak: 'break-word'
+                }}>
+                  {currentWord.hiragana}
+                </h1>
               </div>
-              <div className="card-back" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', backgroundColor: '#fdfdfd', borderRadius: '20px', border: '2px solid #28a745', boxShadow: '0 8px 16px rgba(40,167,69,0.15)' }}>
-                <h2 style={{ fontSize: '4rem', margin: '0 0 15px 0', color: '#333333' }}>{currentWord.kanji || currentWord.hiragana}</h2>
-                <h3 style={{ fontSize: '1.8rem', margin: 0, color: '#c92a2a', fontWeight: 'bold' }}>{currentWord.meaning}</h3>
+
+              {/* Mặt sau */}
+              <div style={{ 
+                position: 'absolute', 
+                width: '100%', 
+                height: '100%', 
+                backfaceVisibility: 'hidden', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                backgroundColor: '#fdfdfd', 
+                borderRadius: '20px', 
+                border: '2px solid #28a745', 
+                boxShadow: '0 8px 16px rgba(40,167,69,0.15)',
+                transform: 'rotateY(180deg)',
+                padding: '20px',
+                boxSizing: 'border-box'
+              }}>
+                <h2 style={{ 
+                  fontSize: '3.2rem', 
+                  margin: '0 0 10px 0', 
+                  color: '#333333',
+                  fontFamily: '"Meiryo", "Hiragino Sans", "MS PGothic", sans-serif',
+                  letterSpacing: '2px',
+                  textAlign: 'center',
+                  wordBreak: 'break-word'
+                }}>
+                  {currentWord.kanji || currentWord.hiragana}
+                </h2>
+                <h3 style={{ fontSize: '1.6rem', margin: 0, color: '#c92a2a', fontWeight: 'bold', textAlign: 'center' }}>
+                  {currentWord.meaning}
+                </h3>
               </div>
+
             </div>
           </div>
         ) : (
           <p style={{ textAlign: 'center', color: '#888' }}>Bài học này hiện chưa có từ vựng.</p>
         )}
         
-        {/* KHU VỰC NÚT ĐIỀU KHIỂN (Thêm nút Xóa cho Admin) */}
         {currentWord && (
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '40px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '40px', flexWrap: 'wrap' }}>
             <button 
               onClick={() => {setIsFlipped(false); setCurrentIndex((prev) => (prev + 1) % vocabData[currentDeck].length)}} 
-              className="next-btn"
-              style={{ fontSize: '1.3rem', padding: '15px 50px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(40,167,69,0.3)', transition: 'all 0.2s' }}
+              style={{ fontSize: '1.2rem', padding: '14px 40px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(40,167,69,0.3)', transition: 'all 0.2s' }}
             >
               Từ tiếp theo ➔
             </button>
 
-            {/* Chỉ Admin mới thấy nút Xóa này */}
             {role === 'admin' && (
               <button 
                 onClick={() => handleDeleteWord(currentWord.id)}
-                style={{ fontSize: '1.1rem', padding: '15px 25px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(220,53,69,0.3)', transition: 'all 0.2s' }}
+                style={{ fontSize: '1.1rem', padding: '14px 25px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(220,53,69,0.3)', transition: 'all 0.2s' }}
               >
                 🗑 Xóa từ này
               </button>
